@@ -14,5 +14,5 @@
       "node_modules/**/*.ts"
     ]
   },
-  "defaultSeverity": "warning"
+  "defaultSeverity": "warn"
 }
