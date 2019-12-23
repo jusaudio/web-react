@@ -18,7 +18,7 @@
     "material-ui": "^0.20.1",
     "react": "^16.4.1",
     "react-autosuggest": "^9.3.4",
-    "react-dom": "^16.4.1",
+    "react-dom": "^16.4.2",
     "react-player": "^1.6.4",
     "react-router-dom": "^4.3.1",
     "react-scripts-ts": "2.16.0",
