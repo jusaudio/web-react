@@ -31,6 +31,7 @@ interface IState {
   showHint: boolean;
   vidId: string | null;
   platformSearchResults: any;
+  searchFocused: boolean;
 }
 
 class MusicList extends React.Component<IProps, IState> {
@@ -39,6 +40,7 @@ class MusicList extends React.Component<IProps, IState> {
     vidId: null,
     showHint: false,
     platformSearchResults: null,
+    searchFocused: false,
   }
 
   public componentDidMount() {
@@ -60,6 +62,10 @@ class MusicList extends React.Component<IProps, IState> {
     });
   }
 
+  public focus = async () => {
+    this.setState({ searchFocused: true });
+  }
+
   public toggleHint = () => {
     this.setState({
       showHint: !this.state.showHint
@@ -68,10 +74,14 @@ class MusicList extends React.Component<IProps, IState> {
 
   public render() {
     return <MobileScreen>
-      <LogoText>JusAudio</LogoText>
-      <MainCopy>Turn Youtube into an portable audio stream. Search streams from Youtube, and play them on an endless Loop with only the sound.</MainCopy>
-      <SeeHowItWorks showHint={this.state.showHint} toggleHint={this.toggleHint} />
-      <MusicSearchBox update={this.updatePlatformSearchResults} />
+      {!this.state.searchFocused ? <>
+        <LogoText>JusAudio</LogoText>
+        <MainCopy>Turn Youtube into an portable audio stream. Search streams from Youtube, and play them on an endless Loop with only the sound.</MainCopy>
+        <SeeHowItWorks showHint={this.state.showHint} toggleHint={this.toggleHint} />
+      </> : null}
+      <MusicSearchBox
+        focus={this.focus}
+        update={this.updatePlatformSearchResults} />
       <br />
       <div>
         <TextMain>Some tracks to get started</TextMain>
@@ -111,14 +121,16 @@ const LogoText = styled("span")`
 `;
 const MainCopy = styled("h1")`
   font-family: Roboto, sans-serif;
-  font-size: 1.75rem;
+  font-size: 1.85rem;
   max-width: 600px;
 `;
 const InteractiveSpan = styled("span")`
+  font-family: Roboto, sans-serif;
   text-decoration: underline;
   cursor: pointer;
   color: #673ab7;
   margin-bottom: 1rem;
+  font-size: 12px;
 `;
 const Ul = styled("ul")`
   margin-left: 1rem;
