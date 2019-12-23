@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+
+.main-playbar {
+  position: fixed !important;
+  bottom: 0 !important;
+  margin: 0 !important;
+  width: 100vw !important;
+  height: 15vh !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+.playbar-button-icon:hover {
+  fill: #b3033c !important;
+}
+
+.tool-tip {
+  font-family: 'Roboto', sans-serif !important;
+}
+
+.song-info {
+  height: 100% !important;
+  color: #fff !important;
+  font-weight: 400 !important;
+}
+
+#song-title {
+  font-size: 1.3em;
+}
+
+#song-artist-country {
+  font-size: 1em;
+}
+
+.play-controls {
+  color: white;
+  cursor: pointer;
+}
