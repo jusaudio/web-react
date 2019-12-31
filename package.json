@@ -32,8 +32,9 @@
     "ytdl-core": "^1.0.5"
   },
   "scripts": {
-    "dev": "yarn start",
-    "start": "PORT=3789 react-scripts-ts start",
+    "dev": "yarn local:start",
+    "local:start": "PORT=3789 react-scripts-ts start",
+    "start": "node index.js",
     "build": "react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject"
