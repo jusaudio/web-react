@@ -1,29 +1,23 @@
 import * as React from "react";
 import styled from "styled-components";
 
-import Slider from '@material-ui/lab/Slider';
+import Slider from '@material-ui/core/Slider';
 import { withStyles } from "@material-ui/core";
 import {
   flagSong
 } from "src/services/metrics";
 
 import {
-  // NextIcon,
-  // PreviousIcon,
   PausePlay,
 } from './assets';
 
 interface IProps {
   classes: any;
   trackIsPlaying: boolean;
-  next: () => void;
-  prev: () => void;
   played: number;
   duration: number;
   onSeekPlay?: (e: any) => void;
   togglePausePlay: () => void;
-  currentTrackIndex: number;
-  discogsMetaDataLength: number;
   metrics: any;
 }
 
@@ -47,8 +41,6 @@ class PlayerControls extends React.Component<IProps> {
     await flagSong(residentId, songTrackId);
     this.setState({
       flagSaving: false,
-    }, () => {
-      this.props.next();
     });
   }
 
@@ -59,8 +51,6 @@ class PlayerControls extends React.Component<IProps> {
       played,
       duration,
       togglePausePlay,
-      currentTrackIndex,
-      discogsMetaDataLength,
     } = this.props;
 
     return(
@@ -86,17 +76,9 @@ class PlayerControls extends React.Component<IProps> {
           </div>
         </ProgressBar>
         <PlayerBar>
-          {/* <PreviousIcon
-            disabled={currentTrackIndex === 0}
-            className="play-controls"
-            onClick={this.props.prev} /> */}
           <PausePlay
             togglePausePlay={togglePausePlay}
             playing={trackIsPlaying} />
-          {/* <NextIcon
-            disabled={currentTrackIndex === discogsMetaDataLength}
-            className="play-controls"
-            onClick={this.props.next} /> */}
         </PlayerBar>
       </section>
     )

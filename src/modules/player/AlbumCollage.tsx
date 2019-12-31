@@ -4,6 +4,7 @@ import { LoaderMusicPlayer } from "../../components/Loader";
 import { ratingEmoticonMappings } from "../../constants/mappings";
 
 interface IProps {
+  togglePausePlay: () => void;
   emotionesRating: any;
   title: string;
   artist: string;
@@ -16,16 +17,12 @@ class AlbumCollage extends React.Component<IProps> {
     waitingMessage: "",
   }
 
-  /**
-   * Need to replace the loading images and position text.
-   * 
-   */
-
   public render() {
     return(
       <React.Fragment>
         <AlbumImageContainer>
           <AlbumImage
+            onClick={() => this.props.togglePausePlay()}
             width={270}
             height={270}
             src={this.props.preloading ? "http://placeimg.com/290/290/nature" : this.props.albumSrc}

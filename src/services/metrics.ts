@@ -1,6 +1,5 @@
 import Store from "../utils/firebase";
 import { firestore } from "firebase";
-import * as Sentry from "@sentry/browser";
 const BackgroundMetrics: firestore.CollectionReference = Store.db.collection("songBackgroundMetrics");
 
 export const fetchOne = (residentId: string, songId: number) => {
@@ -16,7 +15,6 @@ export const fetchOne = (residentId: string, songId: number) => {
     })
     .catch((error: Error) => {
       console.error("Error when fetching one background metric: ", error);
-      Sentry.captureException(error);
     });
 }
 

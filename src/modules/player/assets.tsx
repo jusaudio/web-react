@@ -24,6 +24,7 @@ const Pause = ({ togglePausePlay }: any) =>
 
 const PlayArrow = ({ togglePausePlay }: any) =>
   <svg
+    id="play-icon"
     fill="#fff"
     onClick={togglePausePlay}
     xmlns="http://www.w3.org/2000/svg"

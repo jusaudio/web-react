@@ -1,6 +1,7 @@
 import firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/database";
+import "firebase/storage"
 
 if (!firebase.apps.length) {
   firebase.initializeApp({
@@ -19,8 +20,10 @@ if (!firebase.apps.length) {
 const settings = { timestampsInSnapshots: true };
 const db = firebase.firestore();
 const rtdb = firebase.database();
+const storage = firebase.storage();
 db.settings(settings);
 export default {
   db,
-  rtdb
+  rtdb,
+  storage,
 };

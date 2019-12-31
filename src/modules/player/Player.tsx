@@ -7,6 +7,7 @@ import ReactPlayer from "react-player";
 import AlbumCollage from "./AlbumCollage";
 import PlayerControls from "./PlayerControls";
 
+import * as qs from "query-string"
 import { combineActions } from "redux-zero/utils";
 import { connect } from "redux-zero/react";
 import playerActions from "../player/actions";
@@ -14,6 +15,8 @@ import { IMusicPlayerSettings } from "../../store";
 import placeholderRecord from "./images/record-placeholder.png";
 import { withRouter } from "react-router";
 import { curatedList } from "src/constants/curatedList";
+import { getYoutubeAudio } from "src/services/storage";
+import { getAudioDetails } from "src/services/audio";
 
 const mapToProps = ({
   musicPlayerSettings,
@@ -25,8 +28,6 @@ interface IProps {
   history: any;
   match: any;
   musicPlayerSettings: IMusicPlayerSettings;
-  prevTrackInList: () => void;
-  nextTrackInList: () => void;
 }
 
 const curatedListMapped = {};
@@ -47,6 +48,7 @@ interface IState {
   loadedSeconds: number;
   title: string;
   artist: string;
+  hostedAudioURL: null | string;
 }
 
 class MusicPlayer extends React.Component<IProps, IState> {
@@ -66,32 +68,47 @@ class MusicPlayer extends React.Component<IProps, IState> {
     loadedSeconds: 0,
     title: "-",
     artist: "-",
+    hostedAudioURL: null,
   };
 
   constructor(props: IProps) {
-    super(props);    
+    super(props);
   }
 
   public componentDidMount() {
-    const videoId = this.props.match.params.vidId;
-    this.setDirectYoutube(videoId);
+    // window.setTimeout(() => this.setDirectYoutube(videoId), 100);
+    this.queryAudioMappings();
   }
 
-  public handleNextPress = () => {
-    this.setState({
-      playedSeconds: 1,
-      loadedSeconds: 1
-    });
-    this.props.nextTrackInList();
-  };
+  public async queryAudioMappings() {
+    const videoId = this.props.match.params.vidId;
+    const results = await getAudioDetails(videoId);
+    if (results && results.storageRef) {
+      this.searchAudioStorage(results.storageRef);
+      return;
+    }
+    this.streamFromProxy(videoId);
+  }
 
-  public returnMusicList() {
-    this.props.history.push(`/users/${this.props.match.params.userId}/music`);
+  public async searchAudioStorage(ref: string) {
+    this.setState({
+      hostedAudioURL: await getYoutubeAudio(ref),
+      trackIsPlaying: true,
+    });
+  }
+
+  public async streamFromProxy(vidId: string) {
+    console.log('Stream from proxy server with ', vidId);
+    this.setState({
+      currentURL: 'http://192.168.178.71:3000/stream/' + vidId,
+      trackIsPlaying: true,
+    });
   }
 
   public setDirectYoutube(youtubeId: string): void {
+    console.log('here youtubeUd >> ', youtubeId);
     if (youtubeId) {
-      return this.setState({
+      this.setState({
         videoId: youtubeId,
         currentURL: this.getYoutubeUrl(youtubeId),
         trackIsPlaying: true,
@@ -111,16 +128,19 @@ class MusicPlayer extends React.Component<IProps, IState> {
       played,
       trackIsPlaying,
       currentURL,
+      hostedAudioURL,
       loop,
       loadedSeconds,
       videoId,
       duration
     } = this.state;
+    // console.log('this state >> ', this.state);
 
     return (
       <MuiThemeProvider theme={Theme}>
         <PlayerScreen>
           <AlbumCollage
+            togglePausePlay={this.togglePausePlay}
             emotionesRating={null}
             title={curatedListMapped[videoId] ? curatedListMapped[videoId].title : "Unknown Title"}
             artist={curatedListMapped[videoId] ? curatedListMapped[videoId].secondary : "Unknown Artist"}
@@ -128,10 +148,6 @@ class MusicPlayer extends React.Component<IProps, IState> {
             preloading={loadedSeconds < 10}
           />
           <PlayerControls
-            currentTrackIndex={0}
-            discogsMetaDataLength={0}
-            prev={() => console.log("PREV")}
-            next={() => console.log("NEXT")}
             duration={duration}
             played={played}
             togglePausePlay={this.togglePausePlay}
@@ -140,9 +156,8 @@ class MusicPlayer extends React.Component<IProps, IState> {
           />
           <YoutubeStreamPlayer
             loop={loop}
-            current={currentURL}
+            current={hostedAudioURL ? hostedAudioURL : currentURL}
             played={played}
-            next={this.handleNextPress}
             trackIsPlaying={trackIsPlaying}
             onDuration={this.onDuration}
             onProgress={this.onProgress}
@@ -162,13 +177,7 @@ class MusicPlayer extends React.Component<IProps, IState> {
     });
   };
 
-  protected onPlay = () => this.setState({ trackIsPlaying: true });
-
-  protected onPause = () => this.setState({ trackIsPlaying: false });
-
   protected onDuration = (duration: any) => this.setState({ duration });
-
-  protected toggleLoop = () => this.setState({ loop: !this.state.loop });
 
   protected onProgress = (progress: {
     playedSeconds: number;
@@ -182,30 +191,33 @@ class MusicPlayer extends React.Component<IProps, IState> {
   };
 }
 
-const YoutubeStreamPlayer = ({
+const YoutubeStreamPlayer = withRouter(({
   onDuration,
   onProgress,
   trackIsPlaying,
   current,
-  next,
   restart,
-  loop
+  loop,
+  location
 }: any) => {
-
+  const params = qs.parse(location.search);
   return (
     <React.Fragment>
       <ReactPlayer
-        // TODO: this is so hacky to do, but just use for now
         loop={loop}
-        style={{ height: "0px" }}
+        style={{
+          // @note: this is so hacky to do, but just use for now
+          visibility: params.dev ? "visible" : "hidden",
+          pointerEvents: params.dev ? "auto" : "none",
+          position: "absolute"
+        }}
         width="90vw"
         height="50vh"
         playing={trackIsPlaying}
         volume={1}
         muted={false}
-        controls={true}
-        playsinline={true}
-        config={{ youtube: { playerVars: { autoplay: true } } }}
+        controls={false}
+        playsinline={false}
         url={current}
         onEnded={restart}
         onDuration={onDuration}
@@ -214,7 +226,7 @@ const YoutubeStreamPlayer = ({
       />
     </React.Fragment>
   );
-};
+});
 
 export default withRouter(
   connect(
