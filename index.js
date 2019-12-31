@@ -52,4 +52,5 @@ app.get('/stream/:id', (req, res) => {
 // - Need to download file before the user streams or build dynamic download and switching backend logic
 // - Still have flexibility to stream this from Express server if we want
 
-app.listen(3000, () => console.log('Example app listening on port 3000!'));
+const port = process.env.PORT || 80;
+app.listen(port, () => console.log('Example app listening on port 3000!'));
