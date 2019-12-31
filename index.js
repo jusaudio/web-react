@@ -25,7 +25,7 @@ app.get('/stream/:id', (req, res) => {
   
     astream
       .on('data', chunk => {
-        console.log('Data chunck received >> ', chunk);
+        // console.log('Data chunck received >> ', chunk);
         // fs.appendFile('./mp3/new_media.m4a', chunk, err => {
         //   if(err) throw err;
         // });
