@@ -100,7 +100,7 @@ class MusicPlayer extends React.Component<IProps, IState> {
   public async streamFromProxy(vidId: string) {
     console.log('Stream from proxy server with ', vidId);
     this.setState({
-      currentURL: 'http://192.168.178.71:3000/stream/' + vidId,
+      currentURL: '/stream/' + vidId,
       trackIsPlaying: true,
     });
   }

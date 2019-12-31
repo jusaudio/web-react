@@ -10,7 +10,9 @@
     "autosuggest-highlight": "^3.1.1",
     "axios": "^0.18.1",
     "axios-jsonp": "^1.0.2",
+    "cors": "^2.8.5",
     "downshift": "^2.0.19",
+    "express": "^4.17.1",
     "firebase": "^7.6.1",
     "history": "^4.7.2",
     "keycode": "^2.2.0",
@@ -26,7 +28,8 @@
     "react-select": "^3.0.8",
     "react-tippy": "^1.2.2",
     "redux-zero": "^4.13.0",
-    "styled-components": "^3.3.3"
+    "styled-components": "^3.3.3",
+    "ytdl-core": "^1.0.5"
   },
   "scripts": {
     "dev": "yarn start",
