@@ -18,7 +18,6 @@ class AlbumCollage extends React.Component<IProps> {
   }
 
   public render() {
-    console.log('this props >> ', this.props);
     return(
       <React.Fragment>
         <AlbumImageContainer>

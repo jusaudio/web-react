@@ -1,7 +1,7 @@
 import * as React from "react";
 import styled from "styled-components";
 
-import Slider from '@material-ui/lab/Slider';
+import Slider from '@material-ui/core/Slider';
 import { withStyles } from "@material-ui/core";
 import {
   flagSong

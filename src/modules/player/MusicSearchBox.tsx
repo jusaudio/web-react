@@ -50,8 +50,7 @@ export default class MusicSearchBox extends React.PureComponent<any, any> {
     const list = await suggest(queryString);
     // console.log("list >> ", list);
 
-    this.setState({ suggestions: list });
-    return null;
+    return this.setState({ suggestions: list });
   };
 
   private onSearch = async (queryString: string, platform: MediaPlatforms) => {

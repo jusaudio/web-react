@@ -15,6 +15,8 @@ import { IMusicPlayerSettings } from "../../store";
 import placeholderRecord from "./images/record-placeholder.png";
 import { withRouter } from "react-router";
 import { curatedList } from "src/constants/curatedList";
+import { getYoutubeAudio } from "src/services/storage";
+import { getAudioDetails } from "src/services/audio";
 
 const mapToProps = ({
   musicPlayerSettings,
@@ -46,6 +48,7 @@ interface IState {
   loadedSeconds: number;
   title: string;
   artist: string;
+  hostedAudioURL: null | string;
 }
 
 class MusicPlayer extends React.Component<IProps, IState> {
@@ -65,6 +68,7 @@ class MusicPlayer extends React.Component<IProps, IState> {
     loadedSeconds: 0,
     title: "-",
     artist: "-",
+    hostedAudioURL: null,
   };
 
   constructor(props: IProps) {
@@ -72,12 +76,33 @@ class MusicPlayer extends React.Component<IProps, IState> {
   }
 
   public componentDidMount() {
-    const videoId = this.props.match.params.vidId;
-    window.setTimeout(() => this.setDirectYoutube(videoId), 100);
+    // window.setTimeout(() => this.setDirectYoutube(videoId), 100);
+    this.queryAudioMappings();
   }
 
-  public returnMusicList() {
-    this.props.history.push(`/users/${this.props.match.params.userId}/music`);
+  public async queryAudioMappings() {
+    const videoId = this.props.match.params.vidId;
+    const results = await getAudioDetails(videoId);
+    if (results && results.storageRef) {
+      this.searchAudioStorage(results.storageRef);
+      return;
+    }
+    this.streamFromProxy(videoId);
+  }
+
+  public async searchAudioStorage(ref: string) {
+    this.setState({
+      hostedAudioURL: await getYoutubeAudio(ref),
+      trackIsPlaying: true,
+    });
+  }
+
+  public async streamFromProxy(vidId: string) {
+    console.log('Stream from proxy server with ', vidId);
+    this.setState({
+      currentURL: 'http://192.168.178.71:3000/stream/' + vidId,
+      trackIsPlaying: true,
+    });
   }
 
   public setDirectYoutube(youtubeId: string): void {
@@ -103,13 +128,13 @@ class MusicPlayer extends React.Component<IProps, IState> {
       played,
       trackIsPlaying,
       currentURL,
+      hostedAudioURL,
       loop,
       loadedSeconds,
       videoId,
       duration
     } = this.state;
-
-    console.log('this props >> ', this.state);
+    // console.log('this state >> ', this.state);
 
     return (
       <MuiThemeProvider theme={Theme}>
@@ -131,7 +156,7 @@ class MusicPlayer extends React.Component<IProps, IState> {
           />
           <YoutubeStreamPlayer
             loop={loop}
-            current={currentURL}
+            current={hostedAudioURL ? hostedAudioURL : currentURL}
             played={played}
             trackIsPlaying={trackIsPlaying}
             onDuration={this.onDuration}
@@ -176,7 +201,6 @@ const YoutubeStreamPlayer = withRouter(({
   location
 }: any) => {
   const params = qs.parse(location.search);
-  console.log('params >> ', params);
   return (
     <React.Fragment>
       <ReactPlayer
@@ -194,7 +218,7 @@ const YoutubeStreamPlayer = withRouter(({
         muted={false}
         controls={false}
         playsinline={false}
-        url={'https://storage.googleapis.com/media-session/elephants-dream/the-wires.mp3' || current}
+        url={current}
         onEnded={restart}
         onDuration={onDuration}
         onProgress={onProgress}
