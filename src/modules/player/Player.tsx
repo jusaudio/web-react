@@ -99,8 +99,12 @@ class MusicPlayer extends React.Component<IProps, IState> {
 
   public async streamFromProxy(vidId: string) {
     console.log('Stream from proxy server with ', vidId);
+    let streamUrl = '/stream/'
+    if (location.hostname === 'localhost') {
+      streamUrl = 'https://jus-audio.herokuapp.com/stream/';
+    }
     this.setState({
-      currentURL: '/stream/' + vidId,
+      currentURL: streamUrl + vidId,
       trackIsPlaying: true,
     });
   }
