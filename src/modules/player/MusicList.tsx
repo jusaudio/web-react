@@ -108,7 +108,7 @@ function SeeHowItWorks({ toggleHint, showHint }: any) {
   return <>
     <InteractiveSpan onClick={toggleHint}>See how to use in 3 ways:</InteractiveSpan>
     {showHint ? <Ul>
-      <Li>Just replace https://www.<strong>youtube.com</strong>/watch?v=neV3EPgvZ3g with: <strong>jusaudio.io</strong></Li>
+    <Li>Just replace https://www.<strong>youtube.com</strong>/watch?v=neV3EPgvZ3g with: <strong>{location.hostname}</strong></Li>
       <Li>Use the Search Bar on this page to search for your favorite videos</Li>
       <Li>Try one of our handpicked tracks for work and study below</Li>
     </Ul> : null}
