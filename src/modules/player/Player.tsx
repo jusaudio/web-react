@@ -17,6 +17,7 @@ import { withRouter } from "react-router";
 import { curatedList } from "src/constants/curatedList";
 import { getYoutubeAudio } from "src/services/storage";
 import { getAudioDetails } from "src/services/audio";
+import styled from "styled-components";
 
 const mapToProps = ({
   musicPlayerSettings,
@@ -49,6 +50,8 @@ interface IState {
   title: string;
   artist: string;
   hostedAudioURL: null | string;
+  streamError: boolean;
+  videoMode: boolean;
 }
 
 class MusicPlayer extends React.Component<IProps, IState> {
@@ -69,6 +72,8 @@ class MusicPlayer extends React.Component<IProps, IState> {
     title: "-",
     artist: "-",
     hostedAudioURL: null,
+    streamError: false,
+    videoMode: false,
   };
 
   constructor(props: IProps) {
@@ -76,7 +81,6 @@ class MusicPlayer extends React.Component<IProps, IState> {
   }
 
   public componentDidMount() {
-    // window.setTimeout(() => this.setDirectYoutube(videoId), 100);
     this.queryAudioMappings();
   }
 
@@ -84,14 +88,15 @@ class MusicPlayer extends React.Component<IProps, IState> {
     const videoId = this.props.match.params.vidId;
     const results = await getAudioDetails(videoId);
     if (results && results.storageRef) {
-      this.searchAudioStorage(results.storageRef);
+      this.searchAudioStorage(results.storageRef, videoId);
       return;
     }
     this.streamFromProxy(videoId);
   }
 
-  public async searchAudioStorage(ref: string) {
+  public async searchAudioStorage(ref: string, videoId: string) {
     this.setState({
+      videoId,
       hostedAudioURL: await getYoutubeAudio(ref),
       trackIsPlaying: true,
     });
@@ -104,28 +109,30 @@ class MusicPlayer extends React.Component<IProps, IState> {
       streamUrl = 'https://jus-audio.herokuapp.com/stream/';
     }
     this.setState({
+      videoId: vidId,
       currentURL: streamUrl + vidId,
       trackIsPlaying: true,
     });
-  }
-
-  public setDirectYoutube(youtubeId: string): void {
-    console.log('here youtubeUd >> ', youtubeId);
-    if (youtubeId) {
-      this.setState({
-        videoId: youtubeId,
-        currentURL: this.getYoutubeUrl(youtubeId),
-        trackIsPlaying: true,
-        title: "Generic Title",
-        artist: "Generic Artist",
-      });
-    }
   }
 
   public getYoutubeUrl = (youtubeId: string) =>
     // ?start=1 insures that music stream always starts at the beginning and not affected by youtube
     // cookies or other state issues
     `https://www.youtube.com/watch?v=${youtubeId}?start=1`;
+
+  public handleStreamError = (error: any) => {
+    console.log('There was an error.. ', error);
+    this.setState({
+      streamError: true,
+    });
+  }
+
+  public loadVideoMode = () => {
+    this.setState({
+      streamError: false,
+      videoMode: true,
+    });
+  }
 
   public render() {
     const {
@@ -136,36 +143,41 @@ class MusicPlayer extends React.Component<IProps, IState> {
       loop,
       loadedSeconds,
       videoId,
-      duration
+      duration,
+      streamError,
+      videoMode
     } = this.state;
-    // console.log('this state >> ', this.state);
+    console.log('videoId >> ', videoId);
 
     return (
       <MuiThemeProvider theme={Theme}>
         <PlayerScreen>
-          <AlbumCollage
+          {!streamError ? <AlbumCollage
             togglePausePlay={this.togglePausePlay}
             emotionesRating={null}
             title={curatedListMapped[videoId] ? curatedListMapped[videoId].title : "Unknown Title"}
             artist={curatedListMapped[videoId] ? curatedListMapped[videoId].secondary : "Unknown Artist"}
             albumSrc={curatedListMapped[videoId] ? curatedListMapped[videoId].cover : "https://img.icons8.com/cotton/2x/record.png"}
             preloading={loadedSeconds < 10}
-          />
-          <PlayerControls
+          />: <StreamErrorOptions loadVideoMode={this.loadVideoMode} videoId={videoId} />}
+          {!streamError ? <PlayerControls
             duration={duration}
             played={played}
             togglePausePlay={this.togglePausePlay}
             trackIsPlaying={trackIsPlaying}
             metrics={null}
-          />
-          <YoutubeStreamPlayer
+          /> : null}
+          {!streamError ? <YoutubeStreamPlayer
             loop={loop}
+            videoId={videoId}
+            videoMode={videoMode}
             current={hostedAudioURL ? hostedAudioURL : currentURL}
             played={played}
             trackIsPlaying={trackIsPlaying}
             onDuration={this.onDuration}
             onProgress={this.onProgress}
-          />
+            handleStreamError={this.handleStreamError}
+          /> : null}
         </PlayerScreen>
       </MuiThemeProvider>
     );
@@ -196,6 +208,9 @@ class MusicPlayer extends React.Component<IProps, IState> {
 }
 
 const YoutubeStreamPlayer = withRouter(({
+  videoId,
+  videoMode,
+  handleStreamError,
   onDuration,
   onProgress,
   trackIsPlaying,
@@ -205,9 +220,11 @@ const YoutubeStreamPlayer = withRouter(({
   location
 }: any) => {
   const params = qs.parse(location.search);
+  const streamUrl = videoMode ? `https://www.youtube.com/watch?v=${videoId}` : current;
   return (
     <React.Fragment>
       <ReactPlayer
+        onError={handleStreamError}
         loop={loop}
         style={{
           // @note: this is so hacky to do, but just use for now
@@ -222,7 +239,7 @@ const YoutubeStreamPlayer = withRouter(({
         muted={false}
         controls={false}
         playsinline={false}
-        url={current}
+        url={streamUrl}
         onEnded={restart}
         onDuration={onDuration}
         onProgress={onProgress}
@@ -232,9 +249,39 @@ const YoutubeStreamPlayer = withRouter(({
   );
 });
 
+const StreamErrorOptions = ({videoId, loadVideoMode}: any) => {
+  return (
+    <StreamErrorBox>
+      <a href={`https://youtube.com/watch?v=${videoId}`} target='_blank'>
+        <ErrorOptionButton>Open video in Youtube</ErrorOptionButton>
+      </a>
+      <ErrorOptionButton onClick={() => loadVideoMode(videoId)}>Try another version</ErrorOptionButton>
+    </StreamErrorBox>
+  )
+}
+
 export default withRouter(
   connect(
     mapToProps,
     combineActions(playerActions)
   )(MusicPlayer)
 );
+
+const StreamErrorBox = styled.div`
+  padding-top: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+`;
+
+const ErrorOptionButton = styled.button`
+  padding: .8rem;
+  border-radius: 4px;
+  background: transparent;
+  color: #f1f2f3;
+  font-family: Roboto, sans-serif;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  width: 220px;
+`;
