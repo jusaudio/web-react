@@ -35,7 +35,7 @@ const GeneratedMusicList = ({ platformSearchResults, selectTrack, curatedTracks,
             onClick={onClick}
             key={idx}>
             <TinyAvatar classes={{}} src={cover.default ? cover.default.url : cover} />
-            <ListItemText
+            <ListItemTextStyled
               primary={title}
               secondary={secondary} />
           </ListItemStyled>
@@ -77,6 +77,10 @@ const ListItemStyled: any = styled(ListItem)`
   opacity: ${(props: any) => props.loading ? ".5" : "1"};
   border-bottom: 1px solid #aaa;
   cursor: pointer;
+`;
+
+const ListItemTextStyled: any = styled(ListItemText)`
+  padding-left: 1rem;
 `;
 
 export default GeneratedMusicList;
