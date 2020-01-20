@@ -52,6 +52,7 @@ interface IState {
   hostedAudioURL: null | string;
   streamError: boolean;
   videoMode: boolean;
+  errorMessage: any;
 }
 
 class MusicPlayer extends React.Component<IProps, IState> {
@@ -74,6 +75,7 @@ class MusicPlayer extends React.Component<IProps, IState> {
     hostedAudioURL: null,
     streamError: false,
     videoMode: false,
+    errorMessage: null,
   };
 
   constructor(props: IProps) {
@@ -98,20 +100,19 @@ class MusicPlayer extends React.Component<IProps, IState> {
     this.setState({
       videoId,
       hostedAudioURL: await getYoutubeAudio(ref),
-      trackIsPlaying: true,
     });
   }
 
   public async streamFromProxy(vidId: string) {
-    console.log('Stream from proxy server with ', vidId);
+    // console.log('Stream from proxy server with ', vidId);
     let streamUrl = '/stream/'
-    if (location.hostname === 'localhost') {
+    // Handle local development and network proxy
+    if (location.hostname === 'localhost' || location.hostname.startsWith('192.')) {
       streamUrl = 'https://jus-audio.herokuapp.com/stream/';
     }
     this.setState({
       videoId: vidId,
       currentURL: streamUrl + vidId,
-      trackIsPlaying: true,
     });
   }
 
@@ -120,8 +121,7 @@ class MusicPlayer extends React.Component<IProps, IState> {
     // cookies or other state issues
     `https://www.youtube.com/watch?v=${youtubeId}?start=1`;
 
-  public handleStreamError = (error: any) => {
-    console.log('There was an error.. ', error);
+  public handleStreamError = (e: any) => {
     this.setState({
       streamError: true,
     });
@@ -131,6 +131,7 @@ class MusicPlayer extends React.Component<IProps, IState> {
     this.setState({
       streamError: false,
       videoMode: true,
+      trackIsPlaying: true,
     });
   }
 
@@ -145,9 +146,10 @@ class MusicPlayer extends React.Component<IProps, IState> {
       videoId,
       duration,
       streamError,
-      videoMode
+      videoMode,
+      errorMessage
     } = this.state;
-    console.log('videoId >> ', videoId);
+    // console.log('videoId >> ', videoId);
 
     return (
       <MuiThemeProvider theme={Theme}>
@@ -159,7 +161,7 @@ class MusicPlayer extends React.Component<IProps, IState> {
             artist={curatedListMapped[videoId] ? curatedListMapped[videoId].secondary : "Unknown Artist"}
             albumSrc={curatedListMapped[videoId] ? curatedListMapped[videoId].cover : "https://img.icons8.com/cotton/2x/record.png"}
             preloading={loadedSeconds < 10}
-          />: <StreamErrorOptions loadVideoMode={this.loadVideoMode} videoId={videoId} />}
+          />: <StreamErrorOptions errorMessage={errorMessage} loadVideoMode={this.loadVideoMode} videoId={videoId} />}
           {!streamError ? <PlayerControls
             duration={duration}
             played={played}
@@ -249,9 +251,10 @@ const YoutubeStreamPlayer = withRouter(({
   );
 });
 
-const StreamErrorOptions = ({videoId, loadVideoMode}: any) => {
+const StreamErrorOptions = ({errorMessage, videoId, loadVideoMode}: any) => {
   return (
     <StreamErrorBox>
+      {/* <p>{JSON.stringify(errorMessage.message)}</p> */}
       <a href={`https://youtube.com/watch?v=${videoId}`} target='_blank'>
         <ErrorOptionButton>Open video in Youtube</ErrorOptionButton>
       </a>
