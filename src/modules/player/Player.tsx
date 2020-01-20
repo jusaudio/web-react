@@ -18,6 +18,7 @@ import { curatedList } from "src/constants/curatedList";
 import { getYoutubeAudio } from "src/services/storage";
 import { getAudioDetails } from "src/services/audio";
 import styled from "styled-components";
+import { RECORD_DEFAULT_ALBUM_IMAGE } from "src/constants/settings";
 
 const mapToProps = ({
   musicPlayerSettings,
@@ -159,7 +160,7 @@ class MusicPlayer extends React.Component<IProps, IState> {
             emotionesRating={null}
             title={curatedListMapped[videoId] ? curatedListMapped[videoId].title : "Unknown Title"}
             artist={curatedListMapped[videoId] ? curatedListMapped[videoId].secondary : "Unknown Artist"}
-            albumSrc={curatedListMapped[videoId] ? curatedListMapped[videoId].cover : "https://img.icons8.com/cotton/2x/record.png"}
+            albumSrc={curatedListMapped[videoId] ? curatedListMapped[videoId].cover : RECORD_DEFAULT_ALBUM_IMAGE}
             preloading={loadedSeconds < 10}
           />: <StreamErrorOptions errorMessage={errorMessage} loadVideoMode={this.loadVideoMode} videoId={videoId} />}
           {!streamError ? <PlayerControls
