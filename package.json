@@ -12,7 +12,7 @@
     "axios-jsonp": "^1.0.2",
     "cors": "^2.8.5",
     "downshift": "^2.0.19",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "firebase": "^7.6.1",
     "history": "^4.7.2",
     "keycode": "^2.2.0",
